@@ -3,8 +3,8 @@ const playerFactory = (marker, name) => {
 }
 
 const gameBoard = (() => {
-    const board = [[" ", "X", " "],
-                   ["O", " ", " "],
+    const board = [["X", "O", "X"],
+                   [" ", "O", "X"],
                    ["O", "X", "O"]];
 
     const getBoard = () => board;
@@ -107,6 +107,8 @@ const displayController = (() => {
     const drawBoard = (board) => {
         const container = document.getElementById("cellContainer");
 
+        container.innerHTML = '';
+
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 // Create a "cell" element
@@ -158,7 +160,14 @@ const displayController = (() => {
                     cell.appendChild(svgElement);
                 }
                 else {
-                    cell.addEventListener("click", () => {});
+                    cell.addEventListener("click", (event) => {
+                        if (webGameController.isGameWon()) return;
+
+                        let row = event.target.getAttribute('data-row');
+                        let column = event.target.getAttribute('data-column');
+
+                        webGameController.playTurn(row, column);
+                    });
                 }
 
                 container.appendChild(cell);
@@ -167,6 +176,51 @@ const displayController = (() => {
     };
 
     return { drawBoard };
+})();
+
+const webGameController = (() => {
+    const playerOne = playerFactory("X", "Player One");
+    const playerTwo = playerFactory("O", "Player Two");
+    let currentPlayer = playerOne;
+    let won = false;
+
+    const isGameWon = () => { return won };
+
+    const _changePlayer = () => {
+        if (currentPlayer === playerOne) {
+            currentPlayer = playerTwo;
+        }
+        else {
+            currentPlayer = playerOne;
+        }
+    };
+
+    const playTurn = (row, column) => {
+        gameBoard.makeMove(currentPlayer, row, column);
+
+        displayController.drawBoard(gameBoard.getBoard());
+
+        let winner = gameBoard.checkWinner();
+        if (winner === "X") {
+            console.log("X won!");
+            won = true;
+            return;
+        }
+        else if (winner === "O") {
+            console.log("O won!");
+            won = true;
+            return;
+        }
+        else if (winner === "tie") {
+            console.log("Tie!");
+            won = true;
+            return;
+        }
+
+        _changePlayer();
+    };
+
+    return { isGameWon, playTurn };
 })();
 
 displayController.drawBoard(gameBoard.getBoard());
