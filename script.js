@@ -61,7 +61,7 @@ const gameBoard = (() => {
     return { getBoard, makeMove, checkWinner };
 })();
 
-const gameController = (() => {
+const consoleGameController = (() => {
     const playerOne = playerFactory("X", "Player One");
     const playerTwo = playerFactory("O", "Player Two");
     let currentPlayer = playerOne;
@@ -102,5 +102,3 @@ const gameController = (() => {
 
     return { playTurn };
 })();
-
-// gameController.playTurn();
