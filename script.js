@@ -3,9 +3,9 @@ const playerFactory = (marker, name) => {
 }
 
 const gameBoard = (() => {
-    const board = [[" ", " ", " "],
-                   [" ", " ", " "],
-                   [" ", " ", " "]];
+    const board = [[" ", "X", " "],
+                   ["O", " ", " "],
+                   ["O", "X", "O"]];
 
     const getBoard = () => board;
 
@@ -97,8 +97,76 @@ const consoleGameController = (() => {
 
         _changePlayer();
 
-        playTurn();0
+        playTurn();
     };
 
     return { playTurn };
 })();
+
+const displayController = (() => {
+    const drawBoard = (board) => {
+        const container = document.getElementById("cellContainer");
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                // Create a "cell" element
+                let cell = document.createElement("div");
+                cell.classList.add("cell");
+                cell.setAttribute('data-row', i);
+                cell.setAttribute('data-column', j);
+
+                if (board[i][j] === "X") {
+                    // Create an SVG element for an X
+                    const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                    svgElement.setAttribute("fill", "none");
+                    svgElement.setAttribute("viewBox", "0 0 24 24");
+                    svgElement.setAttribute("stroke-width", "1.5");
+                    svgElement.setAttribute("stroke", "currentColor");
+                    svgElement.classList.add("w-6", "h-6");
+
+                    // Create the path element and set its attributes
+                    const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    pathElement.setAttribute("stroke-linecap", "round");
+                    pathElement.setAttribute("stroke-linejoin", "round");
+                    pathElement.setAttribute("d", "M6 18L18 6M6 6l12 12");
+
+                    // Append the path element to the SVG element
+                    svgElement.appendChild(pathElement);
+
+                    cell.appendChild(svgElement);
+                }
+                else if (board[i][j] === "O") {
+                    // Create an SVG element
+                    const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svgElement.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                    svgElement.setAttribute("fill", "none");
+                    svgElement.setAttribute("viewBox", "0 0 24 24");
+                    svgElement.setAttribute("stroke-width", "1.5");
+                    svgElement.setAttribute("stroke", "currentColor");
+                    svgElement.classList.add("w-6", "h-6");
+
+                    // Create the path element and set its attributes
+                    const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    pathElement.setAttribute("stroke-linecap", "round");
+                    pathElement.setAttribute("stroke-linejoin", "round");
+                    pathElement.setAttribute("d", "M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9");
+
+                    // Append the path element to the SVG element
+                    svgElement.appendChild(pathElement);
+
+                    cell.appendChild(svgElement);
+                }
+                else {
+                    cell.addEventListener("click", () => {});
+                }
+
+                container.appendChild(cell);
+            }
+        }
+    };
+
+    return { drawBoard };
+})();
+
+displayController.drawBoard(gameBoard.getBoard());
