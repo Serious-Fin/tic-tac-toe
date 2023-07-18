@@ -18,6 +18,10 @@ const gameBoard = (() => {
         board[row][column] = player.marker;
     };
 
+    const undoMove = (row, column) => {
+        board[row][column] = " ";
+    };
+
     const checkWinner = () => {
         // Check rows and columns
         for (let i = 0; i < 3; i++) {
@@ -59,7 +63,7 @@ const gameBoard = (() => {
         return null;
     };
 
-    return { getBoard, makeMove, checkWinner };
+    return { getBoard, makeMove, checkWinner, undoMove };
 })();
 
 const consoleGameController = (() => {
@@ -225,6 +229,8 @@ const webGameController = (() => {
     const isGameWon = () => { return won };
 
     const getCurrentPlayer = () => { return currentPlayer };
+    const getUserPlayer = () => { return playerOne };
+    const getComputerPlayer = () => { return playerTwo };
 
     const _changePlayer = () => {
         if (currentPlayer === playerOne) {
@@ -288,11 +294,12 @@ const webGameController = (() => {
         displayController.displayTurn(currentPlayer);
     };
 
-    return { isGameWon, getCurrentPlayer, playTurn };
+    return { isGameWon, getCurrentPlayer, playTurn, getUserPlayer, getComputerPlayer };
 })();
 
 const computerOpponent = (() => {
-    // function to get all available moves
+    const boardCleaner = playerFactory(" ", "Cleaner");
+
     const _getAvailableMoves = (board) => {
         let moves = [];
 
@@ -307,12 +314,117 @@ const computerOpponent = (() => {
         return moves;
     };
 
+    const _minimax = (board, move, maximizingPlayer) => {
+        // Apply move
+        let movePlayer = maximizingPlayer ? webGameController.getComputerPlayer() : webGameController.getUserPlayer();
+        gameBoard.makeMove(movePlayer, move[0], move[1]);
+
+        if (_isTerminal(board)) {
+            let heuristic = _getHeuristic(board);
+            gameBoard.undoMove(move[0], move[1]);
+            return heuristic;
+        }
+
+        if (maximizingPlayer) {
+            let value = -2;
+            let moves = _getAvailableMoves(board);
+
+            for (let i = 0; i < moves.length; i++) {
+                value = Math.max(value, _minimax(board, moves[i], false));
+            }
+
+            gameBoard.undoMove(move[0], move[1]);
+
+            return value;
+        }
+        else {
+            let value = 2;
+            let moves = _getAvailableMoves(board);
+
+            for (let i = 0; i < moves.length; i++) {
+                value = Math.min(value, _minimax(board, moves[i], true));
+            }
+
+            gameBoard.undoMove(move[0], move[1]);
+
+            return value;
+        }
+    };
+
+    const _isTerminal = (board) => {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] === " ") {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
+    const _getHeuristic = (board) => {
+        // Check rows and columns
+        for (let i = 0; i < 3; i++) {
+            if (board[i][0] !== " " && board[i][0] === board[i][1] && board[i][0] === board[i][2]) {
+                return board[i][0] === "O" ? 1 : -1;
+            }
+
+            if (board[0][i] !== " " && board[0][i] === board[1][i] && board[0][i] === board[2][i]) {
+                return board[0][i] === "O" ? 1 : -1;
+            }
+        }
+
+        // Check diagonals
+        if (board[0][0] !== " " && board[0][0] === board[1][1] && board[0][0] === board[2][2]) {
+            return board[0][0] === "O" ? 1 : -1;
+        }
+
+        if (board[0][2] !== " " && board[0][2] === board[1][1] && board[0][2] === board[2][0]) {
+            return board[0][2] === "O" ? 1 : -1;
+        }
+
+        // Tie
+        return 0;
+
+        // Check tie
+        /*
+        let isTie = true;
+        outer:
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] === " ") {
+                    isTie = false;
+                    break outer;
+                }
+            }
+        }
+
+        if (isTie) {
+            return "tie";
+        }
+        */
+    };
+
     // function to make a move at random from available
     const makeMove = (player, board) => {
-        let availableMoves = _getAvailableMoves(board);
-        let randomNumber = Math.floor(Math.random() * availableMoves.length);
-        let row = availableMoves[randomNumber][0];
-        let column = availableMoves[randomNumber][1];
+        let validMoves = _getAvailableMoves(board);
+
+        let maxHeuristic = -2; // -1 is the lowest possible value
+        let moveIndex = 0;
+
+        for (let i = 0; i < validMoves.length; i++) {
+            let currentHeuristic = _minimax(board, validMoves[i], true);
+
+            if (currentHeuristic > maxHeuristic) {
+                maxHeuristic = currentHeuristic;
+                moveIndex = i;
+            }
+        }
+
+        let row = validMoves[moveIndex][0];
+        let column = validMoves[moveIndex][1];
+
         gameBoard.makeMove(player, row, column)
     };
 
