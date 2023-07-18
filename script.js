@@ -3,15 +3,18 @@ const playerFactory = (marker, name) => {
 }
 
 const gameBoard = (() => {
+    
     /*
     const board = [["X", "O", "X"],
                    [" ", "O", "X"],
                    ["O", "X", "O"]];
     */
 
+    
     const board = [[" ", " ", " "],
                    [" ", " ", " "],
                    [" ", " ", " "]];
+    
 
     const getBoard = () => board;
 
@@ -270,5 +273,38 @@ const webGameController = (() => {
     return { isGameWon, getCurrentPlayer, playTurn };
 })();
 
+const computerOpponent = (() => {
+    // function to get all available moves
+    const _getAvailableMoves = (board) => {
+        let moves = [];
+
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[i][j] === " ") {
+                    moves.push([i, j]);
+                }
+            }
+        }
+
+        return moves;
+    };
+
+    // function to make a move at random from available
+    const makeMove = (player, board) => {
+        let availableMoves = _getAvailableMoves(board);
+        let randomNumber = Math.floor(Math.random() * availableMoves.length);
+        let row = availableMoves[randomNumber][0];
+        let column = availableMoves[randomNumber][1];
+        gameBoard.makeMove(player, row, column)
+    };
+
+    return { makeMove };
+})();
+
 displayController.drawBoard(gameBoard.getBoard());
 displayController.displayTurn(webGameController.getCurrentPlayer());
+
+
+computerOpponent.makeMove(webGameController.getCurrentPlayer(), gameBoard.getBoard());
+displayController.drawBoard(gameBoard.getBoard());
+//console.log(computerOpponent.getAvailableMoves(gameBoard.getBoard()));
