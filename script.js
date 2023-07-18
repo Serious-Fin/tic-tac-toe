@@ -298,8 +298,6 @@ const webGameController = (() => {
 })();
 
 const computerOpponent = (() => {
-    const boardCleaner = playerFactory(" ", "Cleaner");
-
     const _getAvailableMoves = (board) => {
         let moves = [];
 
@@ -314,40 +312,38 @@ const computerOpponent = (() => {
         return moves;
     };
 
-    const _minimax = (board, move, maximizingPlayer) => {
-        // Apply move
-        let movePlayer = maximizingPlayer ? webGameController.getComputerPlayer() : webGameController.getUserPlayer();
-        gameBoard.makeMove(movePlayer, move[0], move[1]);
+    const _minimax = (board, maximizingPlayer) => {
+        let score = _getHeuristic(board);
 
-        if (_isTerminal(board)) {
-            let heuristic = _getHeuristic(board);
-            gameBoard.undoMove(move[0], move[1]);
-            return heuristic;
+        if (score !== null) {
+            return score;
         }
 
         if (maximizingPlayer) {
-            let value = -2;
+            let maxValue = -2;
             let moves = _getAvailableMoves(board);
 
             for (let i = 0; i < moves.length; i++) {
-                value = Math.max(value, _minimax(board, moves[i], false));
+                gameBoard.makeMove(webGameController.getComputerPlayer(), moves[i][0], moves[i][1]);
+                let currentValue = _minimax(gameBoard.getBoard(), false);
+                gameBoard.undoMove(moves[i][0], moves[i][1]);
+                maxValue = Math.max(maxValue, currentValue);
             }
 
-            gameBoard.undoMove(move[0], move[1]);
-
-            return value;
+            return maxValue;
         }
         else {
-            let value = 2;
+            let minValue = 2;
             let moves = _getAvailableMoves(board);
 
             for (let i = 0; i < moves.length; i++) {
-                value = Math.min(value, _minimax(board, moves[i], true));
+                gameBoard.makeMove(webGameController.getUserPlayer(), moves[i][0], moves[i][1]);
+                let currentValue = _minimax(gameBoard.getBoard(), true);
+                gameBoard.undoMove(moves[i][0], moves[i][1]);
+                minValue = Math.min(minValue, currentValue);
             }
 
-            gameBoard.undoMove(move[0], move[1]);
-
-            return value;
+            return minValue;
         }
     };
 
@@ -384,37 +380,24 @@ const computerOpponent = (() => {
             return board[0][2] === "O" ? 1 : -1;
         }
 
-        // Tie
-        return 0;
-
-        // Check tie
-        /*
-        let isTie = true;
-        outer:
-        for (let i = 0; i < 3; i++) {
-            for (let j = 0; j < 3; j++) {
-                if (board[i][j] === " ") {
-                    isTie = false;
-                    break outer;
-                }
-            }
+        if (_isTerminal(gameBoard.getBoard())) {
+            return 0;
         }
 
-        if (isTie) {
-            return "tie";
-        }
-        */
+        // No winner yet
+        return null;
     };
 
-    // function to make a move at random from available
-    const makeMove = (player, board) => {
-        let validMoves = _getAvailableMoves(board);
+    const makeMove = () => {
+        let validMoves = _getAvailableMoves(gameBoard.getBoard());
 
         let maxHeuristic = -2; // -1 is the lowest possible value
         let moveIndex = 0;
 
         for (let i = 0; i < validMoves.length; i++) {
-            let currentHeuristic = _minimax(board, validMoves[i], true);
+            gameBoard.makeMove(webGameController.getComputerPlayer(), validMoves[i][0], validMoves[i][1]);
+            let currentHeuristic = _minimax(gameBoard.getBoard(), false);
+            gameBoard.undoMove(validMoves[i][0], validMoves[i][1]);
 
             if (currentHeuristic > maxHeuristic) {
                 maxHeuristic = currentHeuristic;
@@ -425,7 +408,7 @@ const computerOpponent = (() => {
         let row = validMoves[moveIndex][0];
         let column = validMoves[moveIndex][1];
 
-        gameBoard.makeMove(player, row, column)
+        gameBoard.makeMove(webGameController.getComputerPlayer(), row, column)
     };
 
     return { makeMove };
@@ -433,8 +416,3 @@ const computerOpponent = (() => {
 
 displayController.drawBoard(gameBoard.getBoard());
 displayController.displayTurn(webGameController.getCurrentPlayer());
-
-
-//computerOpponent.makeMove(webGameController.getCurrentPlayer(), gameBoard.getBoard());
-//displayController.drawBoard(gameBoard.getBoard());
-//console.log(computerOpponent.getAvailableMoves(gameBoard.getBoard()));
