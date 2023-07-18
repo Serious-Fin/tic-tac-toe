@@ -12,7 +12,7 @@ body {
 
 .title {
     font-family: Arial, Helvetica, sans-serif;
-    font-size: 2.2rem;
+    font-size: 3rem;
     color: white;
     margin: 2rem;
 }
@@ -31,4 +31,26 @@ body {
     background-color: lightgray;
     width: 100%;
     aspect-ratio: 1;
+}
+
+.infoText {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 2rem;
+    color: white;
+    margin: 1.5rem;
+}
+
+.reloadButton {
+    font-size: 1.2rem;
+    background-color: #5239cc;
+    width: 120px;
+    height: 36px;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    border: none;
+    border-radius: 12px;
+}
+
+.reloadButton:hover {
+    background-color: #6657b1;
 }

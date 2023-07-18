@@ -3,9 +3,15 @@ const playerFactory = (marker, name) => {
 }
 
 const gameBoard = (() => {
+    /*
     const board = [["X", "O", "X"],
                    [" ", "O", "X"],
                    ["O", "X", "O"]];
+    */
+
+    const board = [[" ", " ", " "],
+                   [" ", " ", " "],
+                   [" ", " ", " "]];
 
     const getBoard = () => board;
 
@@ -104,6 +110,8 @@ const consoleGameController = (() => {
 })();
 
 const displayController = (() => {
+    const textContainer = document.getElementById('messageContainer');
+
     const drawBoard = (board) => {
         const container = document.getElementById("cellContainer");
 
@@ -175,7 +183,42 @@ const displayController = (() => {
         }
     };
 
-    return { drawBoard };
+    const displayTurn = (player) => {
+        textContainer.innerHTML = '';
+        let textElement = document.createElement('p');
+        textElement.textContent = player.name + "'s turn";
+        textElement.classList.add('infoText');
+        textContainer.appendChild(textElement);
+    }
+
+    const displayWinner = (player) => {
+        textContainer.innerHTML = '';
+        let textElement = document.createElement('p');
+        textElement.textContent = "Winner is " + player.name;
+        textElement.classList.add('infoText');
+        textContainer.appendChild(textElement);
+    };
+
+    const displayTie = () => {
+        textContainer.innerHTML = '';
+        let textElement = document.createElement('p');
+        textElement.textContent = "Tie";
+        textElement.classList.add('infoText');
+        textContainer.appendChild(textElement);
+    };
+
+    const displayReloadButton = () => {
+        let button = document.createElement('button');
+        button.addEventListener("click", function() {
+            location.reload();
+        });
+        button.textContent = "Retry";
+        button.classList.add('reloadButton');
+        let body = document.getElementsByTagName("body")[0];
+        body.appendChild(button);
+    };
+
+    return { drawBoard, displayTurn, displayWinner, displayTie, displayReloadButton };
 })();
 
 const webGameController = (() => {
@@ -185,6 +228,8 @@ const webGameController = (() => {
     let won = false;
 
     const isGameWon = () => { return won };
+
+    const getCurrentPlayer = () => { return currentPlayer };
 
     const _changePlayer = () => {
         if (currentPlayer === playerOne) {
@@ -201,26 +246,29 @@ const webGameController = (() => {
         displayController.drawBoard(gameBoard.getBoard());
 
         let winner = gameBoard.checkWinner();
-        if (winner === "X") {
-            console.log("X won!");
+
+        if (winner !== null) {
             won = true;
-            return;
-        }
-        else if (winner === "O") {
-            console.log("O won!");
-            won = true;
-            return;
-        }
-        else if (winner === "tie") {
-            console.log("Tie!");
-            won = true;
+
+            if (winner === "tie") {
+                displayController.displayTie();
+            }
+            else {
+                displayController.displayWinner(currentPlayer);
+            }
+
+            displayController.displayReloadButton();
+
             return;
         }
 
         _changePlayer();
+
+        displayController.displayTurn(currentPlayer);
     };
 
-    return { isGameWon, playTurn };
+    return { isGameWon, getCurrentPlayer, playTurn };
 })();
 
 displayController.drawBoard(gameBoard.getBoard());
+displayController.displayTurn(webGameController.getCurrentPlayer());
