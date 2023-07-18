@@ -3,14 +3,6 @@ const playerFactory = (marker, name) => {
 }
 
 const gameBoard = (() => {
-    
-    /*
-    const board = [["X", "O", "X"],
-                   [" ", "O", "X"],
-                   ["O", "X", "O"]];
-    */
-
-    
     const board = [[" ", " ", " "],
                    [" ", " ", " "],
                    [" ", " ", " "]];
@@ -225,8 +217,8 @@ const displayController = (() => {
 })();
 
 const webGameController = (() => {
-    const playerOne = playerFactory("X", "Player One");
-    const playerTwo = playerFactory("O", "Player Two");
+    const playerOne = playerFactory("X", "User");
+    const playerTwo = playerFactory("O", "Computer");
     let currentPlayer = playerOne;
     let won = false;
 
@@ -243,11 +235,7 @@ const webGameController = (() => {
         }
     };
 
-    const playTurn = (row, column) => {
-        gameBoard.makeMove(currentPlayer, row, column);
-
-        displayController.drawBoard(gameBoard.getBoard());
-
+    const _winnerLogic = () => {
         let winner = gameBoard.checkWinner();
 
         if (winner !== null) {
@@ -262,11 +250,41 @@ const webGameController = (() => {
 
             displayController.displayReloadButton();
 
-            return;
+            return true;
         }
 
+        return false;
+    };
+
+    const playTurn = (row, column) => {
+        // Player makes a move
+        gameBoard.makeMove(currentPlayer, row, column);
+
+        // display board
+        displayController.drawBoard(gameBoard.getBoard());
+
+        // check if game won => display winner
+        if (_winnerLogic()) return;
+
+        // Change player
         _changePlayer();
 
+        // Update move label
+        displayController.displayTurn(currentPlayer);
+
+        // AI makes a move
+        computerOpponent.makeMove(currentPlayer, gameBoard.getBoard());
+
+        // display board
+        displayController.drawBoard(gameBoard.getBoard());
+
+        // check if game won => display winner
+        if (_winnerLogic()) return;
+
+        // Change player
+        _changePlayer();
+
+        // Update move label
         displayController.displayTurn(currentPlayer);
     };
 
@@ -305,6 +323,6 @@ displayController.drawBoard(gameBoard.getBoard());
 displayController.displayTurn(webGameController.getCurrentPlayer());
 
 
-computerOpponent.makeMove(webGameController.getCurrentPlayer(), gameBoard.getBoard());
-displayController.drawBoard(gameBoard.getBoard());
+//computerOpponent.makeMove(webGameController.getCurrentPlayer(), gameBoard.getBoard());
+//displayController.drawBoard(gameBoard.getBoard());
 //console.log(computerOpponent.getAvailableMoves(gameBoard.getBoard()));
